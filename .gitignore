@@ -25,6 +25,8 @@
 *~
 *example*
 *sopc_*
+*.vvp
+*.vcd
 
 # ignore Quartus II generated folders
 */db/
@@ -37,3 +39,4 @@ incremental_db/
 db/
 _output_files/
 PLLJ_PLLSPE_INFO.txt
+.history/
