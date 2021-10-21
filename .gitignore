@@ -39,5 +39,5 @@ incremental_db/
 db/
 _output_files/
 PLLJ_PLLSPE_INFO.txt
-*/.history/
+*.history/
 */output_files/
