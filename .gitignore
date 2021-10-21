@@ -40,4 +40,4 @@ db/
 _output_files/
 PLLJ_PLLSPE_INFO.txt
 *.history/
-*/output_files/
+output_files/
