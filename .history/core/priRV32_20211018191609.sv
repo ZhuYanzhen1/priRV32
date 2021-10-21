@@ -9,7 +9,7 @@ module priRV32
 	output led
 );
 
-reg [25:0]counter;
+reg [31:0]counter;
 reg [1:0]led_reg;
 
 assign led = led_reg;
@@ -17,15 +17,13 @@ assign led = led_reg;
 always @(posedge clk)
 begin
 	if(rst_n == 1'b0)begin
-		counter <= 26'd0;
-		led_reg <= 1'b0;
-	end else if(counter == 26'd10) begin
-		counter <= 26'd0;
+		counter <= 32
+	end else if(counter == 32'd24999999) begin
+		counter <= 32'd0;
 		led_reg <= ~led_reg;
 	end else begin
-		counter <= counter + 26'd1;
+		counter <= counter + 32'd1;
 	end
 end
-
 
 endmodule
