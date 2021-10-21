@@ -1,3 +1,6 @@
+`include "periph/uart_tx.v"
+`include "periph/uart_rx.v"
+
 module uart_top #(
 	parameter CLK_FREQUENCY = 50,
 	parameter BAUD_RATE = 115200
@@ -8,23 +11,49 @@ module uart_top #(
     input rx_pin,
     output tx_pin,
 	input write_valid,
-	input read_ready,
-	output write_ready,
-	output read_valid,
-	input reg [31:0] write_data,
+	input read_valid,
+	input [31:0] write_data,
 	output reg [31:0] read_data,
-	input reg [31:0] write_address,
-	input reg [31:0] read_address
+	input [31:0] write_address,
+	input [31:0] read_address
 );
 
-	reg [31:0] regs[0:30];
+	reg [31:0] uart_regs[0:4];
+	wire [7:0]tx_data, rx_data;
+	reg tx_data_valid;
+	wire tx_data_ready, rx_data_valid, rx_data_ready;
 
 	always @(posedge clk_in)
-		if (wen)
-            regs[~waddr[4:0]] <= write_data;
+	begin
+		if (write_address[31:4] == 28'h1000000) begin
+			if (write_valid == 1'b1) begin
+            	uart_regs[write_address[1:0]] <= write_data;
+			end
+		end
+		if (read_address[31:4] == 28'h1000000) begin
+			if (read_valid == 1'b1) begin
+				read_data <= uart_regs[read_address[1:0]];
+			end
+		end
+	end
 
-	assign rdata1 = regs[~raddr1[4:0]];
-	assign rdata2 = regs[~raddr2[4:0]];
+	assign tx_data = uart_regs[0][7:0];
+
+	always @(posedge tx_data_ready) begin
+		uart_regs[2][1:0] <= 1'b0;
+		tx_data_valid <= 1'b0;
+	end
+
+	assign rx_data_ready = 1'b1;
+	always @(*) begin
+		if (uart_regs[2][1:0] == 1'b1 && tx_data_ready == 1'b1) begin
+			tx_data_valid <= 1'b1;
+		end
+		if (rx_data_valid == 1'b1) begin
+			uart_regs[1][7:0] = rx_data;
+			uart_regs[2][2:1] <= 1'b1;
+		end
+	end
 
 	uart_rx#
 	(
@@ -48,7 +77,7 @@ module uart_top #(
 	(
 		.clk                        (clk_in       ),
 		.rst_n                      (rst_n        ),
-		.tx_data                    (tx_data      ),
+		.tx_data                    (tx_data  ),
 		.tx_data_valid              (tx_data_valid),
 		.tx_data_ready              (tx_data_ready),
 		.tx_pin                     (tx_pin       )
