@@ -29,11 +29,11 @@ module uart_top #(
 			uart_regs[3] <= 32'h00000000;
 			tx_data_valid <= 1'b0;
 		end else begin
-			if (uart_regs[2][1:0] == 1'b1 && tx_data_ready == 1'b1) begin
-				tx_data_valid <= 1'b1;
-			end else if (tx_data_ready == 1'b1 && tx_data_valid == 1'b1) begin
+			if (tx_data_ready == 1'b1 && tx_data_valid == 1'b1) begin
 				uart_regs[2][1:0] <= 1'b0;
 				tx_data_valid <= 1'b0;
+			end else if (uart_regs[2][1:0] == 1'b1 && tx_data_ready == 1'b1) begin
+				tx_data_valid <= 1'b1;
 			end
 			if (rx_data_valid == 1'b1) begin
 				uart_regs[1][7:0] <= rx_data;
