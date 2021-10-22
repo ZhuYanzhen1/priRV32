@@ -1,6 +1,6 @@
 module uart_tx
 #(
-	parameter CLK_FRE = 50,      //clock frequency(Mhz)
+	parameter CLK_FREQUENCY = 50,      //clock frequency(Mhz)
 	parameter BAUD_RATE = 115200 //serial baud rate
 )
 (
@@ -12,7 +12,7 @@ module uart_tx
 	output                       tx_pin            //serial data output
 );
 //calculates the clock cycle for baud rate 
-localparam                       CYCLE = CLK_FRE * 1000000 / BAUD_RATE;
+localparam                       CYCLE = CLK_FREQUENCY * 1000000 / BAUD_RATE;
 //state machine code
 localparam                       S_IDLE       = 1;
 localparam                       S_START      = 2;//start bit

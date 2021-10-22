@@ -1,6 +1,3 @@
-`include "periph/uart_tx.v"
-`include "periph/uart_rx.v"
-
 module uart_top #(
 	parameter CLK_FREQUENCY = 50,
 	parameter BAUD_RATE = 115200
@@ -23,41 +20,44 @@ module uart_top #(
 	reg tx_data_valid;
 	wire tx_data_ready, rx_data_valid, rx_data_ready;
 
-	always @(posedge clk_in)
+	always @(posedge clk_in or negedge rst_n)
 	begin
-		if (write_address[31:4] == 28'h1000000) begin
-			if (write_valid == 1'b1) begin
-            	uart_regs[write_address[1:0]] <= write_data;
+		if (rst_n == 1'b0) begin
+			uart_regs[0] <= 32'h00000000;
+			uart_regs[1] <= 32'h00000000;
+			uart_regs[2] <= 32'h00000000;
+			uart_regs[3] <= 32'h00000000;
+			tx_data_valid <= 1'b0;
+		end else begin
+			if (uart_regs[2][1:0] == 1'b1 && tx_data_ready == 1'b1) begin
+				tx_data_valid <= 1'b1;
+			end else if (tx_data_ready == 1'b1 && tx_data_valid == 1'b1) begin
+				uart_regs[2][1:0] <= 1'b0;
+				tx_data_valid <= 1'b0;
 			end
-		end
-		if (read_address[31:4] == 28'h1000000) begin
-			if (read_valid == 1'b1) begin
-				read_data <= uart_regs[read_address[1:0]];
+			if (rx_data_valid == 1'b1) begin
+				uart_regs[1][7:0] <= rx_data;
+				uart_regs[2][2:1] <= 1'b1;
+			end
+			if (write_address[31:4] == 28'h1000000) begin
+				if (write_valid == 1'b1) begin
+					uart_regs[write_address[1:0]] <= write_data;
+				end
+			end
+			if (read_address[31:4] == 28'h1000000) begin
+				if (read_valid == 1'b1) begin
+					read_data <= uart_regs[read_address[1:0]];
+				end
 			end
 		end
 	end
 
 	assign tx_data = uart_regs[0][7:0];
-
-	always @(posedge tx_data_ready) begin
-		uart_regs[2][1:0] <= 1'b0;
-		tx_data_valid <= 1'b0;
-	end
-
 	assign rx_data_ready = 1'b1;
-	always @(*) begin
-		if (uart_regs[2][1:0] == 1'b1 && tx_data_ready == 1'b1) begin
-			tx_data_valid <= 1'b1;
-		end
-		if (rx_data_valid == 1'b1) begin
-			uart_regs[1][7:0] = rx_data;
-			uart_regs[2][2:1] <= 1'b1;
-		end
-	end
 
 	uart_rx#
 	(
-		.CLK_FRE(CLK_FREQUENCY),
+		.CLK_FREQUENCY(CLK_FREQUENCY),
 		.BAUD_RATE(BAUD_RATE)
 	) uart_rx_inst
 	(
@@ -71,7 +71,7 @@ module uart_top #(
 
 	uart_tx#
 	(
-		.CLK_FRE(CLK_FREQUENCY),
+		.CLK_FREQUENCY(CLK_FREQUENCY),
 		.BAUD_RATE(BAUD_RATE)
 	) uart_tx_inst
 	(

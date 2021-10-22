@@ -16,12 +16,12 @@ wire led, tx_pin;
         .rst_n          (rst_n),
         .rx_pin         (rx_pin),
         .tx_pin         (tx_pin),
-	    .write_valid    (write_valid),
-	    .read_valid     (read_valid),
-	    .write_data     (write_data),
-	    .read_data      (read_data),
+	      .write_valid    (write_valid),
+	      .read_valid     (read_valid),
+	      .write_data     (write_data),
+	      .read_data      (read_data),
         .write_address  (write_address),
-	    .read_address   (read_address)
+	      .read_address   (read_address)
     );
 
     initial begin
