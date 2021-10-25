@@ -1,5 +1,5 @@
 module cpu_regs(
-	input clk,
+	input clk_in,
 	input rst_n,
 	// from ex
     input wire we_i,
@@ -17,7 +17,7 @@ module cpu_regs(
     reg[31:0] regs[0:31];
 
     // 写寄存器
-    always @ (posedge clk) begin
+    always @ (posedge clk_in) begin
         if (rst_n == 1'b1) begin
             if ((we_i == 1'b1) && (waddr_i != 5'h0)) begin
                 regs[waddr_i] <= wdata_i;
