@@ -15,4 +15,9 @@ module priRV32
 		.rst_n(rst_n)
 	);
 
+	cpu_regs csr_regs(
+		.clk_in(clk_in),
+		.rst_n(rst_n)
+	);
+
 endmodule
