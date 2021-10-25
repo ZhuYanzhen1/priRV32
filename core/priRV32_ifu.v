@@ -1,13 +1,12 @@
-module decoder(
+module priRV32_Decoder(
 	input clk_in,
 	input rst_n,
 	output [31:0] pc_addr_o,
 	input [31:0] pc_data_i
 );
 
-	reg is_lui_auipc_jal, is_lb_lh_lw_lbu_lhu, is_slli_srli_srai, is_jalr_addi_slti_sltiu_xori_ori_andi;
-	reg is_sb_sh_sw, is_sll_srl_sra, is_lui_auipc_jal_jalr_addi_add_sub, is_slti_blt_slt, is_sltiu_bltu_sltu;
-	reg is_beq_bne_blt_bge_bltu_bgeu, is_lbu_lhu_lw, is_alu_reg_imm, is_alu_reg_reg, is_compare;
+	reg is_lb_lh_lw_lbu_lhu, is_slli_srli_srai, is_jalr_addi_slti_sltiu_xori_ori_andi;
+	reg is_sb_sh_sw, is_sll_srl_sra, is_beq_bne_blt_bge_bltu_bgeu, is_alu_reg_imm, is_alu_reg_reg;
 	reg is_mul_div_rem, is_csr_access, is_fence_fencei;
 
 	reg instr_lui, instr_auipc, instr_jal, instr_jalr;
@@ -26,13 +25,6 @@ module decoder(
 	assign decoder_datafetch_reg = pc_data_i;
 
 	always @(*) begin
-		is_lui_auipc_jal <= |{instr_lui, instr_auipc, instr_jal};
-		is_lui_auipc_jal_jalr_addi_add_sub <= |{instr_lui, instr_auipc, instr_jal, instr_jalr, instr_addi, instr_add, instr_sub};
-		is_slti_blt_slt <= |{instr_slti, instr_blt, instr_slt};
-		is_sltiu_bltu_sltu <= |{instr_sltiu, instr_bltu, instr_sltu};
-		is_lbu_lhu_lw <= |{instr_lbu, instr_lhu, instr_lw};
-		is_compare <= |{is_beq_bne_blt_bge_bltu_bgeu, instr_slti, instr_slt, instr_sltiu, instr_sltu};
-
 		instr_lui     <= decoder_datafetch_reg[6:0] == 7'b0110111;
 		instr_auipc   <= decoder_datafetch_reg[6:0] == 7'b0010111;
 		instr_jal     <= decoder_datafetch_reg[6:0] == 7'b1101111;
@@ -130,6 +122,5 @@ module decoder(
 				decoded_imm <= 1'bx;
 		endcase
 	end
-
 
 endmodule
