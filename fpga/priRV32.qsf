@@ -64,4 +64,3 @@ set_global_assignment -name VERILOG_FILE ../periph/uart/uart_rx.v
 set_global_assignment -name VERILOG_FILE ../core/priRV32_top.v
 set_global_assignment -name VERILOG_FILE ../core/priRV32_ifu.v
 set_global_assignment -name VERILOG_FILE ../core/priRV32_exu.v
-set_global_assignment -name QIP_FILE m.qip
