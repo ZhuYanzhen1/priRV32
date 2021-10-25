@@ -5,9 +5,8 @@ module priRV32_Decoder(
 	input [31:0] pc_data_i
 );
 
-	reg is_lb_lh_lw_lbu_lhu, is_slli_srli_srai, is_jalr_addi_slti_sltiu_xori_ori_andi;
+	reg is_lb_lh_lw_lbu_lhu, is_slli_srli_srai, is_jalr_addi_slti_sltiu_xori_ori_andi, is_csr_access, is_fence_fencei;
 	reg is_sb_sh_sw, is_sll_srl_sra, is_beq_bne_blt_bge_bltu_bgeu, is_alu_reg_imm, is_alu_reg_reg;
-	reg is_mul_div_rem, is_csr_access, is_fence_fencei;
 
 	reg instr_lui, instr_auipc, instr_jal, instr_jalr;
 	reg instr_beq, instr_bne, instr_blt, instr_bge, instr_bltu, instr_bgeu;
@@ -16,7 +15,6 @@ module priRV32_Decoder(
 	reg instr_add, instr_sub, instr_sll, instr_slt, instr_sltu, instr_xor, instr_srl, instr_sra, instr_or, instr_and;
 	reg instr_fence, instr_fencei, instr_ecall, instr_ebreak;
 	reg instr_csrrw, instr_csrrs, instr_csrrc, instr_csrrwi, instr_csrrsi, instr_csrrci;
-	reg instr_mul, instr_mulh, instr_mulhsu, instr_mulhu, instr_div, instr_divu, instr_rem, instr_remu;
 
 	reg [31:0]decoded_imm_j, decoded_imm;
 	reg [4:0]decoded_rs1, decoded_rs2, decoded_rd;
@@ -34,7 +32,6 @@ module priRV32_Decoder(
 		is_sb_sh_sw                  <= decoder_datafetch_reg[6:0] == 7'b0100011;
 		is_alu_reg_imm               <= decoder_datafetch_reg[6:0] == 7'b0010011;
 		is_alu_reg_reg               <= decoder_datafetch_reg[6:0] == 7'b0110011;
-		is_mul_div_rem    <= decoder_datafetch_reg[6:0] == 7'b0110011;
 		is_csr_access     <= decoder_datafetch_reg[6:0] == 7'b1110011;
 		is_fence_fencei   <= decoder_datafetch_reg[6:0] == 7'b0001111;
 
@@ -89,15 +86,6 @@ module priRV32_Decoder(
 		instr_csrrwi  <= is_csr_access && decoder_datafetch_reg[14:12] == 3'b101;
 		instr_csrrsi  <= is_csr_access && decoder_datafetch_reg[14:12] == 3'b110;
 		instr_csrrci  <= is_csr_access && decoder_datafetch_reg[14:12] == 3'b111;
-
-		instr_mul     <= is_mul_div_rem && decoder_datafetch_reg[14:12] == 3'b000 && decoder_datafetch_reg[31:25] == 7'b0000001;
-		instr_mulh    <= is_mul_div_rem && decoder_datafetch_reg[14:12] == 3'b001 && decoder_datafetch_reg[31:25] == 7'b0000001;
-		instr_mulhsu  <= is_mul_div_rem && decoder_datafetch_reg[14:12] == 3'b010 && decoder_datafetch_reg[31:25] == 7'b0000001;
-		instr_mulhu   <= is_mul_div_rem && decoder_datafetch_reg[14:12] == 3'b011 && decoder_datafetch_reg[31:25] == 7'b0000001;
-		instr_div     <= is_mul_div_rem && decoder_datafetch_reg[14:12] == 3'b100 && decoder_datafetch_reg[31:25] == 7'b0000001;
-		instr_divu    <= is_mul_div_rem && decoder_datafetch_reg[14:12] == 3'b101 && decoder_datafetch_reg[31:25] == 7'b0000001;
-		instr_rem     <= is_mul_div_rem && decoder_datafetch_reg[14:12] == 3'b110 && decoder_datafetch_reg[31:25] == 7'b0000001;
-		instr_remu    <= is_mul_div_rem && decoder_datafetch_reg[14:12] == 3'b111 && decoder_datafetch_reg[31:25] == 7'b0000001;
 
 		{ decoded_imm_j[31:20], decoded_imm_j[10:1], decoded_imm_j[11], decoded_imm_j[19:12], decoded_imm_j[0] }
 		 <= $signed({decoder_datafetch_reg[31:12], 1'b0});
