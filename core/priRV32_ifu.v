@@ -19,6 +19,9 @@ module decoder(
 	reg instr_csrrw, instr_csrrs, instr_csrrc, instr_csrrwi, instr_csrrsi, instr_csrrci;
 	reg instr_mul, instr_mulh, instr_mulhsu, instr_mulhu, instr_div, instr_divu, instr_rem, instr_remu;
 
+	reg [31:0]decoded_imm_j, decoded_imm;
+	reg [4:0]decoded_rs1, decoded_rs2, decoded_rd;
+
 	wire [31:0] decoder_datafetch_reg;
 	assign decoder_datafetch_reg = pc_data_i;
 
@@ -103,6 +106,29 @@ module decoder(
 		instr_divu    <= is_mul_div_rem && decoder_datafetch_reg[14:12] == 3'b101 && decoder_datafetch_reg[31:25] == 7'b0000001;
 		instr_rem     <= is_mul_div_rem && decoder_datafetch_reg[14:12] == 3'b110 && decoder_datafetch_reg[31:25] == 7'b0000001;
 		instr_remu    <= is_mul_div_rem && decoder_datafetch_reg[14:12] == 3'b111 && decoder_datafetch_reg[31:25] == 7'b0000001;
+
+		{ decoded_imm_j[31:20], decoded_imm_j[10:1], decoded_imm_j[11], decoded_imm_j[19:12], decoded_imm_j[0] }
+		 <= $signed({decoder_datafetch_reg[31:12], 1'b0});
+
+		decoded_rd <= decoder_datafetch_reg[11:7];
+		decoded_rs1 <= decoder_datafetch_reg[19:15];
+		decoded_rs2 <= decoder_datafetch_reg[24:20];
+
+		case (1'b1)
+			instr_jal:
+				decoded_imm <= decoded_imm_j;
+			|{instr_lui, instr_auipc}:
+				decoded_imm <= decoder_datafetch_reg[31:12] << 12;
+			|{instr_jalr, is_lb_lh_lw_lbu_lhu, is_alu_reg_imm, instr_fencei}:
+				decoded_imm <= $signed(decoder_datafetch_reg[31:20]);
+			is_beq_bne_blt_bge_bltu_bgeu:
+				decoded_imm <= $signed({decoder_datafetch_reg[31], decoder_datafetch_reg[7],
+										decoder_datafetch_reg[30:25], decoder_datafetch_reg[11:8], 1'b0});
+			is_sb_sh_sw:
+				decoded_imm <= $signed({decoder_datafetch_reg[31:25], decoder_datafetch_reg[11:7]});
+			default:
+				decoded_imm <= 1'bx;
+		endcase
 	end
 
 
