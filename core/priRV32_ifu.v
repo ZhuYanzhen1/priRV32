@@ -1,7 +1,11 @@
-module priRV32_IFU(input clk_in,
-                       input rst_n,
-                       output [31:0] pc_addr_o,
-                       input [31:0] pc_data_i);
+module priRV32_IFU( input clk_in,
+                    input rst_n,
+                    output [31:0] pc_addr_o,
+                    input [31:0] pc_data_i,
+                    output reg [31:0]imm_latched,
+                    output reg [4:0]rs1_latched,
+                    output reg [4:0]rs2_latched,
+                    output reg[4:0]rd_latched);
     
     wire is_lb_lh_lw_lbu_lhu, is_slli_srli_srai, is_jalr_addi_slti_sltiu_xori_ori_andi, is_csr_access, is_fence_fencei;
     wire is_sb_sh_sw, is_sll_srl_sra, is_beq_bne_blt_bge_bltu_bgeu, is_alu_reg_imm, is_alu_reg_reg;
@@ -109,4 +113,11 @@ module priRV32_IFU(input clk_in,
         endcase
     end
     
+    always @(negedge clk_in) begin
+        imm_latched <= decoded_imm;
+        rs1_latched <= decoded_rs1;
+        rs2_latched <= decoded_rs2;
+        rd_latched  <= decoded_rd;
+    end
+
 endmodule
