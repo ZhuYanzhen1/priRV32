@@ -1,11 +1,13 @@
-module priRV32_IFU( input clk_in,
-                    input rst_n,
-                    output [31:0] pc_addr_o,
-                    input [31:0] pc_data_i,
-                    output reg [31:0]imm_latched,
-                    output reg [4:0]rs1_latched,
-                    output reg [4:0]rs2_latched,
-                    output reg[4:0]rd_latched);
+module priRV32_IFU ( 
+    input clk_in,
+    input rst_n,
+    output [31:0] pc_addr_o,
+    input [31:0] pc_data_i,
+    output reg [31:0] imm_latched,
+    output reg [4:0] rs1_latched,
+    output reg [4:0] rs2_latched,
+    output reg [4:0] rd_latched
+);
     
     wire is_lb_lh_lw_lbu_lhu, is_slli_srli_srai, is_jalr_addi_slti_sltiu_xori_ori_andi, is_csr_access, is_fence_fencei;
     wire is_sb_sh_sw, is_sll_srl_sra, is_beq_bne_blt_bge_bltu_bgeu, is_alu_reg_imm, is_alu_reg_reg;
@@ -98,26 +100,33 @@ module priRV32_IFU( input clk_in,
         
         case (1'b1)
             instr_jal:
-            decoded_imm <= decoded_imm_j;
+                decoded_imm <= decoded_imm_j;
             |{instr_lui, instr_auipc}:
-            decoded_imm <= decoder_datafetch_reg[31:12] << 12;
+                decoded_imm <= decoder_datafetch_reg[31:12] << 12;
             |{instr_jalr, is_lb_lh_lw_lbu_lhu, is_alu_reg_imm, instr_fencei}:
-            decoded_imm <= $signed(decoder_datafetch_reg[31:20]);
+                decoded_imm <= $signed(decoder_datafetch_reg[31:20]);
             is_beq_bne_blt_bge_bltu_bgeu:
-            decoded_imm <= $signed({decoder_datafetch_reg[31], decoder_datafetch_reg[7],
-            decoder_datafetch_reg[30:25], decoder_datafetch_reg[11:8], 1'b0});
+                decoded_imm <= $signed({decoder_datafetch_reg[31], decoder_datafetch_reg[7],
+                decoder_datafetch_reg[30:25], decoder_datafetch_reg[11:8], 1'b0});
             is_sb_sh_sw:
-            decoded_imm <= $signed({decoder_datafetch_reg[31:25], decoder_datafetch_reg[11:7]});
+                decoded_imm <= $signed({decoder_datafetch_reg[31:25], decoder_datafetch_reg[11:7]});
             default:
-            decoded_imm <= 1'bx;
+                decoded_imm <= 1'bx;
         endcase
     end
     
-    always @(negedge clk_in) begin
-        imm_latched <= decoded_imm;
-        rs1_latched <= decoded_rs1;
-        rs2_latched <= decoded_rs2;
-        rd_latched  <= decoded_rd;
+    always @(negedge clk_in or negedge rst_n) begin
+        if(rst_n == 1'b0) begin
+            imm_latched <= 32'h00000000;
+            rs1_latched <= 5'b00000;
+            rs2_latched <= 5'b00000;
+            rd_latched  <= 5'b00000;
+        end else begin
+            imm_latched <= decoded_imm;
+            rs1_latched <= decoded_rs1;
+            rs2_latched <= decoded_rs2;
+            rd_latched  <= decoded_rd;
+        end
     end
 
 endmodule
