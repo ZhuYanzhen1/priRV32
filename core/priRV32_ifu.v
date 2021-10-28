@@ -3,12 +3,18 @@ module priRV32_IFU (
     input rst_n,
     output [31:0] pc_addr_o,
     input [31:0] pc_data_i,
+    input [31:0] pc_addr_i,
     output reg [31:0] imm_latched,
     output reg [4:0] rs1_latched,
     output reg [4:0] rs2_latched,
     output reg [4:0] rd_latched
 );
     
+    localparam STRONG_TOKEN = 2'b00;
+    localparam WEAK_TOKEN = 2'b01;
+    localparam WEAK_NOTOKEN = 2'b10;
+    localparam STRONG_NOTOKEN = 2'b11;
+
     wire is_lb_lh_lw_lbu_lhu, is_slli_srli_srai, is_jalr_addi_slti_sltiu_xori_ori_andi, is_csr_access, is_fence_fencei;
     wire is_sb_sh_sw, is_sll_srl_sra, is_beq_bne_blt_bge_bltu_bgeu, is_alu_reg_imm, is_alu_reg_reg;
     
@@ -22,7 +28,9 @@ module priRV32_IFU (
     
     reg [31:0]decoded_imm_j, decoded_imm;
     reg [4:0]decoded_rs1, decoded_rs2, decoded_rd;
-    
+    reg [1:0]two_bit_saturation_counter;
+    reg [31:0] pc_addr_predict;
+
     wire [31:0] decoder_datafetch_reg;
     assign decoder_datafetch_reg = pc_data_i;
     
@@ -115,6 +123,35 @@ module priRV32_IFU (
         endcase
     end
     
+    //   * JAL: The target address of JAL is calculated based on current PC value
+    //          and offset, and JAL is unconditionally always jump
+    //   * JALR with rs1 == x0: The target address of JALR is calculated based on
+    //          x0+offset, and JALR is unconditionally always jump
+    //   * JALR with rs1 != x0: The target address of JALR need to be resolved
+    //          at EXU stage, hence have to be forced halted, wait the EXU to be
+    //          empty and then read the regfile to grab the value of xN.
+    //          This will exert 1 cycle performance lost for JALR instruction
+    //   * Bxxx: Conditional branch is always predicted as taken if it is backward
+    //          jump, and not-taken if it is forward jump. The target address of JAL
+    //          is calculated based on current PC value and offset
+
+    always @(*) begin
+        case (1'b1)
+            instr_jal:
+                pc_addr_predict <= pc_addr_i + decoded_imm;
+            is_beq_bne_blt_bge_bltu_bgeu: begin
+                case (1'b1)
+                    |{two_bit_saturation_counter == STRONG_TOKEN, two_bit_saturation_counter == WEAK_TOKEN}:
+                        pc_addr_predict <= pc_addr_i + decoded_imm;
+                    |{two_bit_saturation_counter == STRONG_NOTOKEN, two_bit_saturation_counter == WEAK_NOTOKEN}:
+                        pc_addr_predict <= pc_addr_i + 32'd4;
+                endcase
+            end
+            default:
+                pc_addr_predict <= pc_addr_i + 32'd4;
+        endcase
+    end
+
     always @(negedge clk_in or negedge rst_n) begin
         if(rst_n == 1'b0) begin
             imm_latched <= 32'h00000000;
