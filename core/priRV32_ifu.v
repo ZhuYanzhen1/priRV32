@@ -170,6 +170,12 @@ module priRV32_IFU (
 
     always @(negedge clk_i or negedge rst_n) begin
         if(rst_n == 1'b0) begin
+            two_bit_saturation_counter <= 2'b00;
+        end
+    end
+
+    always @(negedge clk_i or negedge rst_n) begin
+        if(rst_n == 1'b0) begin
             imm_latched <= 32'h00000000;
             rs1_latched <= 5'b00000;
             rs2_latched <= 5'b00000;
