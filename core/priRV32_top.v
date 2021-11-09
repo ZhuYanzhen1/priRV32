@@ -3,21 +3,27 @@
 `include "./core/priRV32_exu.v"
 
 module priRV32(
-	input clk_in,
+	input clk_i,
 	input rst_n
 );
 
 	reg [31:0]pc_reg;
-	wire reg_wen;
+	wire reg_wen, exu_branch_result, ifu_branch_result;
+
+	wire [31:0]branch_address, exu_pc_address, ifu_pc_address;
 	wire [31:0]reg_rdata2, reg_rdata1, reg_wdata;
 	wire [4:0]reg_waddr, reg_raddr2, reg_raddr1;
 
-	always @(negedge rst_n) begin
-		pc_reg <= 32'h00000000;
+	always @(posedge clk_i or negedge rst_n) begin
+		if (rst_n == 1'b0) begin
+			pc_reg <= 32'h00000000;
+		end else begin
+			pc_reg <= branch_result == ifu_branch_result ? ifu_pc_address : exu_pc_address;
+		end
 	end
 
 	priV32_Regs general_regs(
-		.clk_in(clk_in),
+		.clk_i(clk_i),
 		.rst_n(rst_n),
 		.we_i(reg_wen),
 		.waddr_i(reg_waddr),
@@ -29,8 +35,11 @@ module priRV32(
 	);
 
 	priRV32_IFU ifu(
-		.clk_in(clk_in),
-		.rst_n(rst_n)
+		.clk_i(clk_i),
+		.rst_n(rst_n),
+		.branch_result_o(ifu_branch_result),
+		.pc_addr_o(ifu_pc_address),
+		.pc_addr_i(pc_reg)
 	);
 
 endmodule

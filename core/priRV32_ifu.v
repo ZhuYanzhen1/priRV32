@@ -1,6 +1,7 @@
 module priRV32_IFU ( 
-    input clk_in,
+    input clk_i,
     input rst_n,
+    output reg branch_result_o,
     output [31:0] pc_addr_o,
     input [31:0] pc_data_i,
     input [31:0] pc_addr_i,
@@ -30,6 +31,7 @@ module priRV32_IFU (
     reg [4:0]decoded_rs1, decoded_rs2, decoded_rd;
     reg [1:0]two_bit_saturation_counter;
     reg [31:0] pc_addr_predict;
+    reg branch_result;
 
     wire [31:0] decoder_datafetch_reg;
     assign decoder_datafetch_reg = pc_data_i;
@@ -135,6 +137,7 @@ module priRV32_IFU (
     //          jump, and not-taken if it is forward jump. The target address of JAL
     //          is calculated based on current PC value and offset
 
+    assign pc_addr_o = pc_addr_predict;
     always @(*) begin
         case (1'b1)
             instr_jal:
@@ -152,7 +155,20 @@ module priRV32_IFU (
         endcase
     end
 
-    always @(negedge clk_in or negedge rst_n) begin
+    always @(*) begin
+        case (two_bit_saturation_counter)
+            STRONG_TOKEN:
+                branch_result = 1;
+            WEAK_TOKEN: 
+                branch_result = 1;
+            STRONG_NOTOKEN:
+                branch_result = 0;
+            WEAK_NOTOKEN:
+                branch_result = 0;
+        endcase
+    end
+
+    always @(negedge clk_i or negedge rst_n) begin
         if(rst_n == 1'b0) begin
             imm_latched <= 32'h00000000;
             rs1_latched <= 5'b00000;
@@ -163,6 +179,7 @@ module priRV32_IFU (
             rs1_latched <= decoded_rs1;
             rs2_latched <= decoded_rs2;
             rd_latched  <= decoded_rd;
+            branch_result_o <= branch_result;
         end
     end
 
