@@ -2,6 +2,7 @@ module priRV32_IFU (
     input clk_i,
     input rst_n,
     output reg branch_result_o,
+    input exu_branch_result_i,
     output [31:0] pc_addr_o,
     input [31:0] pc_data_i,
     input [31:0] pc_addr_i,
@@ -31,7 +32,7 @@ module priRV32_IFU (
     reg [4:0]decoded_rs1, decoded_rs2, decoded_rd;
     reg [1:0]two_bit_saturation_counter;
     reg [31:0] pc_addr_predict;
-    reg branch_result;
+    reg branch_result, is_last_branch_instr;
 
     wire [31:0] decoder_datafetch_reg;
     assign decoder_datafetch_reg = pc_data_i;
@@ -171,6 +172,29 @@ module priRV32_IFU (
     always @(negedge clk_i or negedge rst_n) begin
         if(rst_n == 1'b0) begin
             two_bit_saturation_counter <= 2'b00;
+            is_last_branch_instr <= 1'b0;
+        end else begin
+            if (is_last_branch_instr == 1'b1) begin
+                if (exu_branch_result_i == 1'b0) begin
+                    case (two_bit_saturation_counter)
+                        STRONG_TOKEN:
+                            two_bit_saturation_counter <= WEAK_TOKEN;
+                        WEAK_TOKEN:
+                            two_bit_saturation_counter <= WEAK_NOTOKEN;
+                        default:
+                            two_bit_saturation_counter <= STRONG_NOTOKEN;
+                    endcase
+                end else begin
+                    case (two_bit_saturation_counter)
+                        STRONG_NOTOKEN:
+                            two_bit_saturation_counter <= WEAK_NOTOKEN;
+                        WEAK_NOTOKEN:
+                            two_bit_saturation_counter <= WEAK_TOKEN;
+                        default:
+                            two_bit_saturation_counter <= STRONG_TOKEN;
+                    endcase
+                end
+            end
         end
     end
 
