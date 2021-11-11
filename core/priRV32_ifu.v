@@ -205,6 +205,7 @@ module priRV32_IFU (
             rs2_latched <= 5'b00000;
             rd_latched  <= 5'b00000;
         end else begin
+            is_last_branch_instr <= is_beq_bne_blt_bge_bltu_bgeu;
             imm_latched <= decoded_imm;
             rs1_latched <= decoded_rs1;
             rs2_latched <= decoded_rs2;
