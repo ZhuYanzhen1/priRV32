@@ -1,15 +1,10 @@
 `timescale 1ns/1ns
 `include "./core/priRV32_ifu.v"
 
-module priRV32_ifu_tb;
+module priRV32_tb;
 
-reg clk, rst_n, exu_result;
-reg [31:0]pc_data_i, pc_addr_i;
-
-    initial begin
-        $dumpfile("priRV32_tb.vcd");
-        $dumpvars(0, priRV32_ifu_tb);
-    end
+    reg clk, rst_n, exu_result;
+    reg [31:0]pc_data_i, pc_addr_i;
 
     priRV32_IFU ifu(.clk_i(clk),
                     .rst_n(rst_n),
@@ -19,6 +14,8 @@ reg [31:0]pc_data_i, pc_addr_i;
     );
 
     initial begin
+        $dumpfile("./priRV32_tb.vcd");
+        $dumpvars(0, priRV32_tb);
         exu_result = 1'b0;
         rst_n = 1'b1;
         clk = 1'b0;
@@ -34,6 +31,8 @@ reg [31:0]pc_data_i, pc_addr_i;
         #50
 		$stop;
     end
+
     always
         #1 clk = ~clk;
+
 endmodule
