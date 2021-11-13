@@ -17,16 +17,16 @@ module priRV32_IFU (
     localparam WEAK_NOTOKEN = 2'b10;
     localparam STRONG_NOTOKEN = 2'b11;
 
+    output wire instr_lui, instr_auipc, instr_jal, instr_jalr;
+    output wire instr_beq, instr_bne, instr_blt, instr_bge, instr_bltu, instr_bgeu;
+    output wire instr_lb, instr_lh, instr_lw, instr_lbu, instr_lhu, instr_sb, instr_sh, instr_sw;
+    output wire instr_addi, instr_slti, instr_sltiu, instr_xori, instr_ori, instr_andi, instr_slli, instr_srli, instr_srai;
+    output wire instr_add, instr_sub, instr_sll, instr_slt, instr_sltu, instr_xor, instr_srl, instr_sra, instr_or, instr_and;
+    output wire instr_fence, instr_fencei, instr_ecall, instr_ebreak;
+    output wire instr_csrrw, instr_csrrs, instr_csrrc, instr_csrrwi, instr_csrrsi, instr_csrrci;
+    
     wire is_lb_lh_lw_lbu_lhu, is_slli_srli_srai, is_jalr_addi_slti_sltiu_xori_ori_andi, is_csr_access, is_fence_fencei;
     wire is_sb_sh_sw, is_sll_srl_sra, is_beq_bne_blt_bge_bltu_bgeu, is_alu_reg_imm, is_alu_reg_reg;
-    
-    wire instr_lui, instr_auipc, instr_jal, instr_jalr;
-    wire instr_beq, instr_bne, instr_blt, instr_bge, instr_bltu, instr_bgeu;
-    wire instr_lb, instr_lh, instr_lw, instr_lbu, instr_lhu, instr_sb, instr_sh, instr_sw;
-    wire instr_addi, instr_slti, instr_sltiu, instr_xori, instr_ori, instr_andi, instr_slli, instr_srli, instr_srai;
-    wire instr_add, instr_sub, instr_sll, instr_slt, instr_sltu, instr_xor, instr_srl, instr_sra, instr_or, instr_and;
-    wire instr_fence, instr_fencei, instr_ecall, instr_ebreak;
-    wire instr_csrrw, instr_csrrs, instr_csrrc, instr_csrrwi, instr_csrrsi, instr_csrrci;
     
     reg [31:0]decoded_imm_j, decoded_imm;
     reg [4:0]decoded_rs1, decoded_rs2, decoded_rd;
@@ -175,6 +175,7 @@ module priRV32_IFU (
             is_last_branch_instr <= 1'b0;
         end else begin
             if (is_last_branch_instr == 1'b1) begin
+                is_last_branch_instr <= 1'b0;
                 if (exu_branch_result_i == 1'b0) begin
                     case (two_bit_saturation_counter)
                         STRONG_TOKEN:
@@ -194,6 +195,10 @@ module priRV32_IFU (
                             two_bit_saturation_counter <= STRONG_TOKEN;
                     endcase
                 end
+            end else if(is_beq_bne_blt_bge_bltu_bgeu == 1'b1) begin
+                is_last_branch_instr <= 1'b1;
+            end else begin
+                is_last_branch_instr <= is_last_branch_instr;
             end
         end
     end
@@ -205,7 +210,6 @@ module priRV32_IFU (
             rs2_latched <= 5'b00000;
             rd_latched  <= 5'b00000;
         end else begin
-            is_last_branch_instr <= is_beq_bne_blt_bge_bltu_bgeu;
             imm_latched <= decoded_imm;
             rs1_latched <= decoded_rs1;
             rs2_latched <= decoded_rs2;
