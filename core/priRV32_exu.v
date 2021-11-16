@@ -1,9 +1,9 @@
-module priRV32_IFU( 
+module priRV32_EXU( 
     input clk_in,
     input rst_n,
     input [31:0] imm_decoded,
-    input [4:0] rs1_decoded,
-    input [4:0] rs2_decoded,
+    input [31:0] rs1_decoded,
+    input [31:0] rs2_decoded,
     input [4:0] rd_decoded
 );
 

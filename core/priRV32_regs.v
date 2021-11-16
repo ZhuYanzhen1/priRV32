@@ -1,5 +1,5 @@
 module priV32_Regs(
-	input clk_in,
+	input clk_i,
 	input rst_n,
 
     input wire we_i,
@@ -14,7 +14,7 @@ module priV32_Regs(
 );
     reg[31:0] regs[0:31];
 
-    always @ (posedge clk_in) begin
+    always @ (posedge clk_i) begin
         if (rst_n == 1'b1) begin
             if ((we_i == 1'b1) && (waddr_i != 5'h0)) begin
                 regs[waddr_i] <= wdata_i;

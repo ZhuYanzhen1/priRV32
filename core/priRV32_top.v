@@ -11,7 +11,7 @@ module priRV32(
 	wire reg_wen, exu_branch_result, ifu_branch_result;
 
 	wire [31:0]branch_address, exu_pc_address, ifu_pc_address;
-	wire [31:0]reg_rdata2, reg_rdata1, reg_wdata;
+	wire [31:0]reg_rdata2, reg_rdata1, reg_wdata, imm_latched;
 	wire [4:0]reg_waddr, reg_raddr2, reg_raddr1;
 	wire [4:0]rd_latched;
 
@@ -43,10 +43,19 @@ module priRV32(
 		.exu_branch_result_i(exu_branch_result),
 		.pc_data_i(),
 		.pc_addr_i(pc_reg),
-		.imm_latched(),
+		.imm_latched(imm_latched),
 		.rs1_latched(reg_raddr1),
 		.rs2_latched(reg_raddr2),
 		.rd_latched(rd_latched)
 	);
 
+	priRV32_EXU exu( 
+		.clk_in(clk_i),
+		.rst_n(rst_n),
+		.imm_decoded(imm_latched),
+		.rs1_decoded(reg_rdata1),
+		.rs2_decoded(reg_rdata2),
+		.rd_decoded(rd_latched)
+	);
+	
 endmodule

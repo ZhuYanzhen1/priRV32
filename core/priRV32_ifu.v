@@ -17,13 +17,13 @@ module priRV32_IFU (
     localparam WEAK_NOTOKEN = 2'b10;
     localparam STRONG_NOTOKEN = 2'b11;
 
-    output wire instr_lui, instr_auipc, instr_jal, instr_jalr;
-    output wire instr_beq, instr_bne, instr_blt, instr_bge, instr_bltu, instr_bgeu;
-    output wire instr_lb, instr_lh, instr_lw, instr_lbu, instr_lhu, instr_sb, instr_sh, instr_sw;
-    output wire instr_addi, instr_slti, instr_sltiu, instr_xori, instr_ori, instr_andi, instr_slli, instr_srli, instr_srai;
-    output wire instr_add, instr_sub, instr_sll, instr_slt, instr_sltu, instr_xor, instr_srl, instr_sra, instr_or, instr_and;
-    output wire instr_fence, instr_fencei, instr_ecall, instr_ebreak;
-    output wire instr_csrrw, instr_csrrs, instr_csrrc, instr_csrrwi, instr_csrrsi, instr_csrrci;
+    wire instr_lui, instr_auipc, instr_jal, instr_jalr;
+    wire instr_beq, instr_bne, instr_blt, instr_bge, instr_bltu, instr_bgeu;
+    wire instr_lb, instr_lh, instr_lw, instr_lbu, instr_lhu, instr_sb, instr_sh, instr_sw;
+    wire instr_addi, instr_slti, instr_sltiu, instr_xori, instr_ori, instr_andi, instr_slli, instr_srli, instr_srai;
+    wire instr_add, instr_sub, instr_sll, instr_slt, instr_sltu, instr_xor, instr_srl, instr_sra, instr_or, instr_and;
+    wire instr_fence, instr_fencei, instr_ecall, instr_ebreak;
+    wire instr_csrrw, instr_csrrs, instr_csrrc, instr_csrrwi, instr_csrrsi, instr_csrrci;
     
     wire is_lb_lh_lw_lbu_lhu, is_slli_srli_srai, is_jalr_addi_slti_sltiu_xori_ori_andi, is_csr_access, is_fence_fencei;
     wire is_sb_sh_sw, is_sll_srl_sra, is_beq_bne_blt_bge_bltu_bgeu, is_alu_reg_imm, is_alu_reg_reg;
