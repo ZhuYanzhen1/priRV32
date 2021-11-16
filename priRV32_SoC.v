@@ -34,6 +34,14 @@ module priRV32_SoC (
 		.rst_n(rst_n)
 	);
 
+    itcm_ram itcm_ram1(
+	   .address(),
+		.clock(clk_in),
+		.data(),
+		.wren(),
+		.q()
+    );
+	
     priRV32 rv32_core(
         .clk_in(clk_in),
 		.rst_n(rst_n)
