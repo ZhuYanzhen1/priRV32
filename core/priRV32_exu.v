@@ -1,5 +1,5 @@
 module priRV32_EXU( 
-    input clk_in,
+    input clk_i,
     input rst_n,
     input [31:0] imm_decoded,
     input [31:0] rs1_decoded,
