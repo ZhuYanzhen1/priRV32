@@ -132,7 +132,7 @@ module priRV32_IFU (
             is_sb_sh_sw:
                 decoded_imm <= $signed({decoder_datafetch_reg[31:25], decoder_datafetch_reg[11:7]});
             default:
-                decoded_imm <= 1'bx;
+                decoded_imm <= 'bx;
         endcase
     end
     
