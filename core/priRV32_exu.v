@@ -1,13 +1,14 @@
 module priRV32_EXU( 
     input clk_i,
     input rst_n,
+    output reg[31:0] mem_readwrite_address,
+    input [31:0] mem_read_data,
     input [31:0] imm_decoded,
     input [31:0] rs1_decoded,
     input [31:0] rs2_decoded,
     input [31:0] pc_latched,
-    input [4:0] rd_reg,
-    input [4:0] rs1_reg,
     input [4:0] rs2_reg,
+    input [4:0] rd_reg,
     input [46:0] instrset_latched
 );
 
@@ -32,9 +33,10 @@ module priRV32_EXU(
     assign is_slli_srli_srai = |{instr_slli, instr_srli, instr_srai};
     assign is_jalr_addi_slti_sltiu_xori_ori_andi = |{instr_jalr, instr_addi, instr_slti, instr_sltiu, instr_xori, instr_ori, instr_andi};
 
-    reg [31:0] alu_out, alu_add_sub, alu_shl, alu_shr, reg_op1, reg_op2;
+    reg [31:0] alu_out, alu_add_sub, alu_shl, alu_shr, reg_op1, reg_op2, reg_out;
     reg alu_eq, alu_ltu, alu_lts;
     always @* begin
+        mem_readwrite_address <= rs1_decoded + imm_decoded;
         /* ALU shift, addition, subtraction and comparison calculations */
         alu_add_sub <= instr_sub ? reg_op1 - reg_op2 : reg_op1 + reg_op2;
         alu_eq <= reg_op1 == reg_op2;
@@ -46,7 +48,7 @@ module priRV32_EXU(
         alu_out <= 'bx;
         case (1'b1)
 			|{instr_lui, instr_auipc, instr_jal, instr_jalr, instr_addi, instr_add, instr_sub}:
-				alu_out = alu_add_sub;
+				alu_out <= alu_add_sub;
 			|{is_beq_bne_blt_bge_bltu_bgeu, instr_slti, instr_slt, instr_sltiu, instr_sltu}: begin
                 case (1'b1)
                     instr_beq:
@@ -81,12 +83,23 @@ module priRV32_EXU(
         reg_op1 <= rs1_decoded;
         reg_op2 <= rs2_decoded;
         case (1'b1)
-        is_lui_auipc_jal: begin
-            reg_op1 <= instr_lui ? 0 : pc_latched;
-            reg_op2 <= imm_decoded;
-        end
-        |{is_jalr_addi_slti_sltiu_xori_ori_andi, is_slli_srli_srai}:
-            reg_op2 <= is_slli_srli_srai ? rs2_reg : imm_decoded;
+            is_lui_auipc_jal: begin
+                reg_op1 <= instr_lui ? 0 : pc_latched;
+                reg_op2 <= imm_decoded;
+            end
+            |{is_jalr_addi_slti_sltiu_xori_ori_andi, is_slli_srli_srai}:
+                reg_op2 <= is_slli_srli_srai ? rs2_reg : imm_decoded;
+        endcase
+    end
+
+    always @(*) begin
+        case (1'b1)
+            instr_lb:
+                reg_out <= $signed(mem_read_data[7:0]);
+            |{instr_lbu, instr_lhu, instr_lw}: 
+                reg_out <= mem_read_data;
+			instr_lh: 
+                reg_out <= $signed(mem_read_data[15:0]);
         endcase
     end
 

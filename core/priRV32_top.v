@@ -51,7 +51,7 @@ module priRV32(
 	);
 
 	priRV32_EXU exu( 
-		.clk_in(clk_i),
+		.clk_i(clk_i),
 		.rst_n(rst_n),
 		.imm_decoded(imm_latched),
 		.rs1_decoded(reg_rdata1),
