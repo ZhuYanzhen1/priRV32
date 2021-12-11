@@ -19,7 +19,7 @@ module priRV32_EXU(
     wire instr_add, instr_sub, instr_sll, instr_slt, instr_sltu, instr_xor, instr_srl, instr_sra, instr_or, instr_and;
     wire instr_fence, instr_fencei, instr_ecall, instr_ebreak, is_beq_bne_blt_bge_bltu_bgeu;
     wire instr_csrrw, instr_csrrs, instr_csrrc, instr_csrrwi, instr_csrrsi, instr_csrrci;
-    wire is_lui_auipc_jal, is_lb_lh_lw_lbu_lhu, is_slli_srli_srai, is_jalr_addi_slti_sltiu_xori_ori_andi;
+    wire is_lui_auipc_jal, is_lb_lh_lw_lbu_lhu, is_slli_srli_srai, is_jalr_addi_slti_sltiu_xori_ori_andi, is_sb_sh_sw;
 
     assign  {instr_lui, instr_auipc, instr_jal, instr_jalr, instr_beq, instr_bne, instr_blt, instr_bge
             , instr_bltu, instr_bgeu, instr_lb, instr_lh, instr_lw, instr_lbu, instr_lhu, instr_sb, instr_sh
@@ -32,6 +32,7 @@ module priRV32_EXU(
     assign is_lb_lh_lw_lbu_lhu = |{instr_lb, instr_lh, instr_lw, instr_lbu, instr_lhu};
     assign is_slli_srli_srai = |{instr_slli, instr_srli, instr_srai};
     assign is_jalr_addi_slti_sltiu_xori_ori_andi = |{instr_jalr, instr_addi, instr_slti, instr_sltiu, instr_xori, instr_ori, instr_andi};
+    assign is_sb_sh_sw = |{instr_sb, instr_sh, instr_sw};
 
     reg [31:0] alu_out, alu_add_sub, alu_shl, alu_shr, reg_op1, reg_op2, reg_out;
     reg alu_eq, alu_ltu, alu_lts;
@@ -89,16 +90,21 @@ module priRV32_EXU(
             end
             |{is_jalr_addi_slti_sltiu_xori_ori_andi, is_slli_srli_srai}:
                 reg_op2 <= is_slli_srli_srai ? rs2_reg : imm_decoded;
+            |{is_lb_lh_lw_lbu_lhu, is_sb_sh_sw}:
+                reg_op2 <= imm_decoded;
         endcase
     end
 
     always @(*) begin
+        if (|{is_lb_lh_lw_lbu_lhu, is_sb_sh_sw}) begin
+            mem_readwrite_address <= alu_add_sub;
+        end
         case (1'b1)
             instr_lb:
                 reg_out <= $signed(mem_read_data[7:0]);
             |{instr_lbu, instr_lhu, instr_lw}: 
                 reg_out <= mem_read_data;
-			instr_lh: 
+			instr_lh:
                 reg_out <= $signed(mem_read_data[15:0]);
         endcase
     end
