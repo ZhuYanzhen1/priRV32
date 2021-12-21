@@ -96,9 +96,10 @@ module priRV32_EXU(
     end
 
     always @(*) begin
-        if (|{is_lb_lh_lw_lbu_lhu, is_sb_sh_sw}) begin
+        if (|{is_lb_lh_lw_lbu_lhu, is_sb_sh_sw})
             mem_readwrite_address <= alu_add_sub;
-        end
+        else
+            mem_readwrite_address <= 32'b0;
         case (1'b1)
             instr_lb:
                 reg_out <= $signed(mem_read_data[7:0]);

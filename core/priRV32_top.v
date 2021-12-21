@@ -56,7 +56,7 @@ module priRV32(
 		.imm_decoded(imm_latched),
 		.rs1_decoded(reg_rdata1),
 		.rs2_decoded(reg_rdata2),
-		.rd_decoded(rd_latched),
+		.rd_reg(rd_latched),
 		.instrset_latched(instrset_latched)
 	);
 	

@@ -1,5 +1,6 @@
 `include "./core/priRV32_top.v"
 `include "./periph/uart/uart_top.v"
+`include "./fpga/itcm_ram.v"
 
 module PowerOn_RST#(
 	parameter CNT = 20'd500_000	// 50k / 50MHz = 10ms
@@ -48,8 +49,8 @@ module priRV32_SoC (
     );
 
     uart_top #(
-        .CLK_FREQUENCY(CLK_FREQUENCY),
-		.BAUD_RATE(BAUD_RATE)
+        .CLK_FREQUENCY(50_000_000),
+		.BAUD_RATE(115200)
     )uart1(
         .clk_in(clk_in),
 		.rst_n(rst_n),
