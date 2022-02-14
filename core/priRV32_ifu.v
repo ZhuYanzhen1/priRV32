@@ -139,8 +139,6 @@ module priRV32_IFU (
     assign pc_addr_o = pc_addr_predict;
     always @(*) begin
         case (1'b1)
-            instr_jal:
-                pc_addr_predict <= pc_addr_i + decoded_imm;
             is_beq_bne_blt_bge_bltu_bgeu: begin
                 case (1'b1)
                     |{two_bit_saturation_counter == STRONG_TOKEN, two_bit_saturation_counter == WEAK_TOKEN}:
