@@ -4,7 +4,12 @@
 
 module priRV32(
 	input clk_i,
-	input rst_n
+	input rst_n,
+	output [31:0] itcm_address,
+	input [31:0] itcm_data,
+	output [31:0] mem_readwrite_address,
+	input [31:0] mem_read_data,
+	output [31:0] mem_write_data
 );
 
 	reg [31:0]pc_reg;
@@ -14,6 +19,8 @@ module priRV32(
 	wire [31:0]reg_rdata2, reg_rdata1, reg_wdata, imm_latched, datafetch_latched;
 	wire [4:0]reg_waddr, reg_raddr2, reg_raddr1, rd_latched;
 	wire [46:0]instrset_latched;
+
+	assign itcm_address = pc_reg;
 
 	always @(posedge clk_i or negedge rst_n) begin
 		if (rst_n == 1'b0) begin
@@ -53,6 +60,9 @@ module priRV32(
 	priRV32_EXU exu( 
 		.clk_i(clk_i),
 		.rst_n(rst_n),
+		.mem_readwrite_address(mem_readwrite_address),
+		.mem_read_data(mem_read_data),
+		.mem_write_data(mem_write_data),
 		.imm_decoded(imm_latched),
 		.rs1_decoded(reg_rdata1),
 		.rs2_decoded(reg_rdata2),
